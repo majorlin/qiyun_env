@@ -1,25 +1,11 @@
-# ******************************************************************************
-# File: Makefile
-# Created Date: Thursday, January 9th 2020, 1:59:55 pm
-# Author: Major Lin
-# -----
-# Last Modified: Thu Jan 09 2020
-# Modified By: Major Lin
-# -----
-# 
-# -----
-# HISTORY:
-# Date      	By           	Comments
-# ----------	-------------	----------------------------------------------------------
-# ******************************************************************************
 DEVICE_NAME ?= Qiyun
 MODULE ?= platinum
-TEST_CASE ?= platinum
 CHIP_NAME ?= CPU_K32W133G256VAxA 
 CORE ?= cortex-m0
 LDFILE ?= flash
 
 DEFS += -D$(CHIP_NAME)
+DEFS += -D__NO_SYSTEM_INIT
 DEFS += -DLDFILE=\"$(LDFILE)\"
 DEVICE_PATH = ./Device/$(DEVICE_NAME)
 
@@ -43,7 +29,7 @@ CFLAGS += -fdata-sections
 CFLAGS += -specs=nano.specs
 CFLAGS += -specs=nosys.specs
 
-TARGET = output/$(DEVICE_NAME)/$(TEST_CASE)_$(LDFILE)
+TARGET = output/$(LDFILE)
 LINK_FILE_PATH ?= $(DEVICE_PATH)/gcc/$(LDFILE).ld
 
 LFLAGS += -static
@@ -55,8 +41,7 @@ DEVICE_SRC += 	$(wildcard $(DEVICE_PATH)/*.c) \
 				$(wildcard ./Device/drivers/*.c)
 
 SRC += $(DEVICE_SRC)
-SRC += $(wildcard Modules/$(MODULE)/$(TEST_CASE).c)
-SRC += $(wildcard Modules/$(MODULE)/hal/*.c)
+SRC += $(wildcard Modules/$(MODULE)/*.c)
 
 
 ASRC = $(wildcard $(DEVICE_PATH)/gcc/*.S)
@@ -82,6 +67,7 @@ $(TARGET).elf: $(OBJS)
 	$(CC) $(CFLAGS) $(LFLAGS) -o $@ $^
 	$(OD) -h -S $(TARGET).elf > $(TARGET).lst
 	$(OC) -O binary $(TARGET).elf $(TARGET).bin
+	python ./scripts/bin2hex.py $(TARGET).bin > $(TARGET).hex
 
 flash: $(TARGET).elf size
 	@echo
@@ -104,7 +90,7 @@ $(BUILD_PATH)/%.o: %.S
 	@echo
 	@echo Assembling: $<
 	@$(MKDIR) -p $(dir $@)
-	$(CC) -x assembler-with-cpp -c $(ASFLAGS) $< -o $@	
+	$(CC) -x assembler-with-cpp -c $(ASFLAGS) $(DEFS) $< -o $@	
 
 qemu:
 	@qemu-system-arm -M ? | grep musca-b1 >/dev/null || exit
