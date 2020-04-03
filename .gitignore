@@ -1,0 +1,8 @@
+*.o
+*.elf
+*.lst
+*.map
+*.bin
+*.hex
+test.sh
+tags
