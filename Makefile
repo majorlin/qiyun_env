@@ -6,6 +6,7 @@ LDFILE ?= flash
 
 DEFS += -D$(CHIP_NAME)
 DEFS += -D__NO_SYSTEM_INIT
+DEFS += -D__STARTUP_CLEAR_BSS -D__ATOLLIC__
 DEFS += -DLDFILE=\"$(LDFILE)\"
 DEVICE_PATH = ./Device/$(DEVICE_NAME)
 
@@ -20,7 +21,7 @@ GDB = $(TOOLCHAIN)-gdb
 
 MKDIR=mkdir -p
 
-COMM_FLAGS += -mcpu=$(CORE) -g3 -Os -mthumb -Wall -fmessage-length=0
+COMM_FLAGS += -mcpu=$(CORE) -g3 -O0 -mthumb -Wall -fmessage-length=0
 ASFLAGS += $(COMM_FLAGS)
 
 CFLAGS += $(COMM_FLAGS)
@@ -32,7 +33,7 @@ CFLAGS += -specs=nosys.specs
 TARGET = output/$(LDFILE)
 LINK_FILE_PATH ?= $(DEVICE_PATH)/gcc/$(LDFILE).ld
 
-LFLAGS += -static
+LFLAGS += -static -nostartfiles
 LFLAGS += -T$(LINK_FILE_PATH)
 
 DEVICE_SRC += 	$(wildcard $(DEVICE_PATH)/*.c) \
