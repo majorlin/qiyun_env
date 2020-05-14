@@ -21,7 +21,7 @@ GDB = $(TOOLCHAIN)-gdb
 
 MKDIR=mkdir -p
 
-COMM_FLAGS += -mcpu=$(CORE) -g3 -O0 -mthumb -Wall -fmessage-length=0
+COMM_FLAGS += -mcpu=$(CORE) -g3 -O0 -mthumb -Wall -fmessage-length=0 -nostdlib
 ASFLAGS += $(COMM_FLAGS)
 
 CFLAGS += $(COMM_FLAGS)
@@ -68,7 +68,7 @@ $(TARGET).elf: $(OBJS)
 	$(CC) $(CFLAGS) $(LFLAGS) -o $@ $^
 	$(OD) -h -S $(TARGET).elf > $(TARGET).lst
 	$(OC) -O binary $(TARGET).elf $(TARGET).bin
-	python ./scripts/bin2hex.py $(TARGET).bin > $(TARGET).hex
+	python ./scripts/bin2hex32.py $(TARGET).bin > $(TARGET).hex
 
 flash: $(TARGET).elf size
 	@echo

@@ -450,7 +450,7 @@ typedef struct {					/*!< USARTn Structure       */
 
 	union {
 		__IO uint32_t IER;			/*!< Interrupt Enable Register. Contains individual interrupt enable bits for the 7 potential UART interrupts (DLAB = 0). */
-		__IO uint32_t DLM;			/*!< Divisor Latch MSB. Most significant byte of the baud rate divisor value. The full divisor is used to generate a baud rate from the fractional rate divider (DLAB = 1). */
+		__IO uint32_t DLH;			/*!< Divisor Latch MSB. Most significant byte of the baud rate divisor value. The full divisor is used to generate a baud rate from the fractional rate divider (DLAB = 1). */
 	};
 
 	union {
@@ -463,26 +463,6 @@ typedef struct {					/*!< USARTn Structure       */
 	__I  uint32_t LSR;				/*!< Line Status Register. Contains flags for transmit and receive status, including line errors. */
 	__I  uint32_t MSR;				/*!< Modem Status Register. Only present on USART ports with full modem support. */
 	__IO uint32_t SCR;				/*!< Scratch Pad Register. Eight-bit temporary storage for software. */
-	__IO uint32_t ACR;				/*!< Auto-baud Control Register. Contains controls for the auto-baud feature. */
-	__IO uint32_t ICR;				/*!< IrDA control register (not all UARTS) */
-	__IO uint32_t FDR;				/*!< Fractional Divider Register. Generates a clock input for the baud rate divider. */
-	__IO uint32_t OSR;				/*!< Oversampling Register. Controls the degree of oversampling during each bit time. Only on some UARTS. */
-	__IO uint32_t TER1;				/*!< Transmit Enable Register. Turns off USART transmitter for use with software flow control. */
-	uint32_t  RESERVED0[3];
-    __IO uint32_t HDEN;				/*!< Half-duplex enable Register- only on some UARTs */
-	__I  uint32_t RESERVED1[1];
-	__IO uint32_t SCICTRL;			/*!< Smart card interface control register- only on some UARTs */
-
-	__IO uint32_t RS485CTRL;		/*!< RS-485/EIA-485 Control. Contains controls to configure various aspects of RS-485/EIA-485 modes. */
-	__IO uint32_t RS485ADRMATCH;	/*!< RS-485/EIA-485 address match. Contains the address match value for RS-485/EIA-485 mode. */
-	__IO uint32_t RS485DLY;			/*!< RS-485/EIA-485 direction control delay. */
-
-	union {
-		__IO uint32_t SYNCCTRL;		/*!< Synchronous mode control register. Only on USARTs. */
-		__I  uint32_t FIFOLVL;		/*!< FIFO Level register. Provides the current fill levels of the transmit and receive FIFOs. */
-	};
-
-	__IO uint32_t TER2;				/*!< Transmit Enable Register. Only on LPC177X_8X UART4 and LPC18XX/43XX USART0/2/3. */
 } UART_Type;
 
 
@@ -500,8 +480,8 @@ typedef struct {					/*!< USARTn Structure       */
 /**
  * @brief Macro defines for UART Divisor Latch MSB register
  */
-#define UART_LOAD_DLM(div)  (((div) >> 8) & 0xFF)	/*!< Macro for loading MSB of divisors */
-#define UART_DLM_MASKBIT    (0xFF)		            /*!< Divisor latch MSB bit mask */
+#define UART_LOAD_DLH(div)  (((div) >> 8) & 0xFF)	/*!< Macro for loading MSB of divisors */
+#define UART_DLH_MASKBIT    (0xFF)		            /*!< Divisor latch MSB bit mask */
 
 /**
  * @brief Macro defines for UART Interrupt Enable Register
@@ -615,91 +595,155 @@ typedef struct {					/*!< USARTn Structure       */
 #define UART_MSR_DCD            (1 << 7)	/*!< Modem status: Data Carrier Detect State */
 #define UART_MSR_BITMASK        (0xFF)		/*!< Modem status: MSR register bit-mask value */
 
-/**
- * @brief Macro defines for UART Auto baudrate control register
- */
-#define UART_ACR_START              (1 << 0)	/*!< UART Auto-baud start */
-#define UART_ACR_MODE               (1 << 1)	/*!< UART Auto baudrate Mode 1 */
-#define UART_ACR_AUTO_RESTART       (1 << 2)	/*!< UART Auto baudrate restart */
-#define UART_ACR_ABEOINT_CLR        (1 << 8)	/*!< UART End of auto-baud interrupt clear */
-#define UART_ACR_ABTOINT_CLR        (1 << 9)	/*!< UART Auto-baud time-out interrupt clear */
-#define UART_ACR_BITMASK            (0x307)		/*!< UART Auto Baudrate register bit mask */
-
-/**
- * Autobaud modes
- */
-#define UART_ACR_MODE0              (0)	/*!< Auto baudrate Mode 0 */
-#define UART_ACR_MODE1              (1)	/*!< Auto baudrate Mode 1 */
-
-/**
- * @brief Macro defines for UART RS485 Control register
- */
-#define UART_RS485CTRL_NMM_EN       (1 << 0)	/*!< RS-485/EIA-485 Normal Multi-drop Mode (NMM) is disabled */
-#define UART_RS485CTRL_RX_DIS       (1 << 1)	/*!< The receiver is disabled */
-#define UART_RS485CTRL_AADEN        (1 << 2)	/*!< Auto Address Detect (AAD) is enabled */
-#define UART_RS485CTRL_SEL_DTR      (1 << 3)	/*!< If direction control is enabled (bit DCTRL = 1), pin DTR is
-												        used for direction control */
-#define UART_RS485CTRL_DCTRL_EN     (1 << 4)	/*!< Enable Auto Direction Control */
-#define UART_RS485CTRL_OINV_1       (1 << 5)	/*!< This bit reverses the polarity of the direction
-												       control signal on the RTS (or DTR) pin. The direction control pin
-												       will be driven to logic "1" when the transmitter has data to be sent */
-#define UART_RS485CTRL_BITMASK      (0x3F)		/*!< RS485 control bit-mask value */
-
-/**
- * @brief Macro defines for UART IrDA Control Register - valid for 11xx, 17xx/40xx UART0/2/3, 18xx/43xx UART3 only
- */
-#define UART_ICR_IRDAEN         (1 << 0)			/*!< IrDA mode enable */
-#define UART_ICR_IRDAINV        (1 << 1)			/*!< IrDA serial input inverted */
-#define UART_ICR_FIXPULSE_EN    (1 << 2)			/*!< IrDA fixed pulse width mode */
-#define UART_ICR_PULSEDIV(n)    ((n & 0x07) << 3)	/*!< PulseDiv - Configures the pulse when FixPulseEn = 1 */
-#define UART_ICR_BITMASK        (0x3F)				/*!< UART IRDA bit mask */
-
-/**
- * @brief Macro defines for UART half duplex register - ????
- */
-#define UART_HDEN_HDEN          ((1 << 0))			/*!< enable half-duplex mode*/
-
-/**
- * @brief Macro defines for UART Smart card interface Control Register - valid for 11xx, 18xx/43xx UART0/2/3 only
- */
-#define UART_SCICTRL_SCIEN        (1 << 0)			/*!< enable asynchronous half-duplex smart card interface*/
-#define UART_SCICTRL_NACKDIS      (1 << 1)			/*!< NACK response is inhibited*/
-#define UART_SCICTRL_PROTSEL_T1   (1 << 2)			/*!< ISO7816-3 protocol T1 is selected*/
-#define UART_SCICTRL_TXRETRY(n)   ((n & 0x07) << 5)	/*!< number of retransmission*/
-#define UART_SCICTRL_GUARDTIME(n) ((n & 0xFF) << 8)	/*!< Extra guard time*/
-
-/**
- * @brief Macro defines for UART Fractional Divider Register
- */
-#define UART_FDR_DIVADDVAL(n)   (n & 0x0F)			/*!< Baud-rate generation pre-scaler divisor */
-#define UART_FDR_MULVAL(n)      ((n << 4) & 0xF0)	/*!< Baud-rate pre-scaler multiplier value */
-#define UART_FDR_BITMASK        (0xFF)				/*!< UART Fractional Divider register bit mask */
-
-/**
- * @brief Macro defines for UART Tx Enable Register
- */
-#define UART_TER1_TXEN      (1 << 7)		/*!< Transmit enable bit  - valid for 11xx, 13xx, 17xx/40xx only */
-#define UART_TER2_TXEN      (1 << 0)		/*!< Transmit enable bit  - valid for 18xx/43xx only */
-
-/**
- * @brief Macro defines for UART Synchronous Control Register - 11xx, 18xx/43xx UART0/2/3 only 
- */
-#define UART_SYNCCTRL_SYNC             (1 << 0)			/*!< enable synchronous mode*/
-#define UART_SYNCCTRL_CSRC_MASTER      (1 << 1)  		/*!< synchronous master mode*/
-#define UART_SYNCCTRL_FES              (1 << 2)			/*!< sample on falling edge*/
-#define UART_SYNCCTRL_TSBYPASS         (1 << 3)			/*!< to be defined*/
-#define UART_SYNCCTRL_CSCEN            (1 << 4)			/*!< Continuous running clock enable (master mode only)*/
-#define UART_SYNCCTRL_STARTSTOPDISABLE (1 << 5)	        /*!< Do not send start/stop bit*/
-#define UART_SYNCCTRL_CCCLR            (1 << 6)			/*!< stop continuous clock*/
 
 /* UART - Peripheral instance base addresses */
 /** Peripheral UART0 base address */
-#define UART0_BASE                                (0x40020000u)
+#define UART0_BASE                                (0x4006A000u)
 /** Peripheral UART0 base pointer */
 #define UART0                                     ((UART_Type *)UART0_BASE)
+/** Peripheral UART1 base address */
+#define UART1_BASE                                (0x4006B000u)
+/** Peripheral UART1 base pointer */
+#define UART1                                     ((UART_Type *)UART1_BASE)
+/** Peripheral UART2 base address */
+#define UART2_BASE                                (0x4006C000u)
+/** Peripheral UART2 base pointer */
+#define UART2                                     ((UART_Type *)UART2_BASE)
+/** Peripheral UART3 base address */
+#define UART3_BASE                                (0x4006D000u)
+/** Peripheral UART3 base pointer */
+#define UART3                                     ((UART_Type *)UART3_BASE)
 /** Array initializer of UART peripheral base addresses */
-#define UART_BASE_ADDRS                           { UART0_BASE }
+#define UART_BASE_ADDRS                           { UART0_BASE, UART1_BASE, UART2_BASE, UART3_BASE }
 /** Array initializer of UART peripheral base pointers */
-#define UART_BASE_PTRS                            { UART0 }
+#define UART_BASE_PTRS                            { UART0, UART1, UART2, UART3 }
+
+/* ----------------------------------------------------------------------------
+   -- MRCC Peripheral Access Layer
+   ---------------------------------------------------------------------------- */
+
+/*!
+ * @addtogroup MRCC_Peripheral_Access_Layer MRCC Peripheral Access Layer
+ * @{
+ */
+
+/** MRCC - Register Layout Typedef */
+typedef struct {
+  __IO uint32_t CTRL[38];                             /**< MRCC Control Register, offset: 0x0 */
+} MRCC_Type;
+
+/* ----------------------------------------------------------------------------
+   -- MRCC Register Masks
+   ---------------------------------------------------------------------------- */
+
+/*!
+ * @addtogroup MRCC_Register_Masks MRCC Register Masks
+ * @{
+ */
+
+/*! @name CTRL - MRCC Control Register */
+/*! @{ */
+#define MRCC_CTRL_CM_MASK                      (0x1U)
+#define MRCC_CTRL_CM_SHIFT                     (0U)
+/*! CM - Clock Mode 
+ *  0b0..Clock is disabled.
+ *  0b1..Clock is enabled.
+ */
+#define MRCC_CTRL_CM(x)                        (((uint32_t)(((uint32_t)(x)) << MRCC_CTRL_CM_SHIFT)) & MRCC_CTRL_CM_MASK)
+
+#define MRCC_CTRL_MUX_MASK                    (0x70U)
+#define MRCC_CTRL_MUX_SHIFT                   (4U)
+/*! MUX - Select clock source for module function clock */
+#define MRCC_CTRL_MUX(x)                      (((uint32_t)(((uint32_t)(x)) << MRCC_CTRL_MUX_SHIFT)) & MRCC_CTRL_MUX_MASK)
+
+#define MRCC_CTRL_CLKDIV_MASK                    (0xF00U)
+#define MRCC_CTRL_CLKDIV_SHIFT                   (8U)
+/*! CLKDIV - Divided ratio for module function clock */
+#define MRCC_CLKDIV_MUX(x)                      (((uint32_t)(((uint32_t)(x)) << MRCC_CTRL_CLKDIV_SHIFT)) & MRCC_CTRL_CLKDIV_MASK)
+
+#define MRCC_CTRL_RSTB_MASK                      (0x1U << 22)
+#define MRCC_CTRL_RSTB_SHIFT                     (22U)
+/*! RSTB - Module reset
+ *  0b0..Module under reset.
+ *  0b1..Module enabled.
+ */
+#define MRCC_CTRL_RSTB(x)                        (((uint32_t)(((uint32_t)(x)) << MRCC_CTRL_RSTB_SHIFT)) & MRCC_CTRL_RSTB_MASK)
+
+#define MRCC_CTRL_PR_MASK                      (0x1U << 23)
+#define MRCC_CTRL_PR_SHIFT                     (23U)
+/*! PR - Module present
+ *  0b0..Module not present.
+ *  0b1..Module present.
+ */
+#define MRCC_CTRL_PR(x)                        (((uint32_t)(((uint32_t)(x)) << MRCC_CTRL_PR_SHIFT)) & MRCC_CTRL_PR_MASK)
+
+#define MRCC_CTRL_LOCK_MASK                      (0x1U << 31)
+#define MRCC_CTRL_LOCK_SHIFT                     (31U)
+/*! LOCK - Module present
+ *  0b0..Module not present.
+ *  0b1..Module present.
+ */
+#define MRCC_CTRL_LOCK(x)                        (((uint32_t)(((uint32_t)(x)) << MRCC_CTRL_LOCK_SHIFT)) & MRCC_CTRL_LOCK_MASK)
+
+#define MRCC_WDOG                  0
+#define MRCC_EWDT                  1
+#define MRCC_RTC                   2
+#define MRCC_LPTIMER               3
+#define MRCC_PWM0                  4
+#define MRCC_PWM1                  5
+#define MRCC_PWM2                  6
+#define MRCC_PWM3                  7
+#define MRCC_PDB                   8
+#define MRCC_LPIT                  9
+#define MRCC_CAN0                  10
+#define MRCC_CAN1                  11
+#define MRCC_UART0                 12
+#define MRCC_UART1                 13
+#define MRCC_UART2                 14
+#define MRCC_UART3                 15
+#define MRCC_SPI0                  16
+#define MRCC_SPI1                  17
+#define MRCC_SPI2                  18
+#define MRCC_I2C0                  19
+#define MRCC_I2C1                  20
+#define MRCC_ADC0                  21
+#define MRCC_ADC1                  22
+#define MRCC_CMP                   23
+#define MRCC_CRC                   24
+#define MRCC_FLASH                 25
+#define MRCC_SRAM0                 26
+#define MRCC_SRAM1                 27
+#define MRCC_SRAM2                 28
+#define MRCC_DMA                   29
+#define MRCC_MPU                   30
+#define MRCC_GPIO                  31
+#define MRCC_PORTA                 32
+#define MRCC_PORTB                 33
+#define MRCC_PORTB                 33
+#define MRCC_PORTC                 34
+#define MRCC_PORTD                 35
+#define MRCC_PORTE                 36
+#define MRCC_REGEND                37
+
+#define MRCC_UNLOCK_KEY                         (0x5b000000)
+/*!
+ * @}
+ */ /* end of group MRCC_Register_Masks */
+
+
+/* MRCC - Peripheral instance base addresses */
+/** Peripheral MRCC0 base address */
+#define MRCC0_BASE                                (0x40065000u)
+/** Peripheral MRCC0 base pointer */
+#define MRCC0                                     ((MRCC_Type *)MRCC0_BASE)
+/** Array initializer of MRCC peripheral base addresses */
+#define MRCC_BASE_ADDRS                           { MRCC0_BASE }
+/** Array initializer of MRCC peripheral base pointers */
+#define MRCC_BASE_PTRS                            { MRCC0 }
+
+/*!
+ * @}
+ */ /* end of group MRCC_Peripheral_Access_Layer */
+
 
 #endif /* __CPU_HEADER_H_ */
