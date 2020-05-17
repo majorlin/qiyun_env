@@ -1,54 +1,42 @@
 #include "common.h"
-#ifndef BAUDRATE
-#define BAUDRATE (2000000)
-#endif
 void env_uart_init(){
-    uint32_t div, divh, divl;
 
-    MRCC0->CTRL[MRCC_UART0] = MRCC_UNLOCK_KEY;
-    MRCC0->CTRL[MRCC_UART0] = MRCC_CTRL_RSTB_MASK|MRCC_CTRL_PR_MASK|MRCC_CTRL_CM_MASK;
+    MRCC0->CTRL[MRCC_UART1] = MRCC_UNLOCK_KEY;
+    MRCC0->CTRL[MRCC_UART1] = MRCC_CTRL_RSTB_MASK|MRCC_CTRL_PR_MASK|MRCC_CTRL_CM_MASK;
 
     MRCC0->CTRL[MRCC_PORTD] = MRCC_UNLOCK_KEY;
     MRCC0->CTRL[MRCC_PORTD] = MRCC_CTRL_RSTB_MASK|MRCC_CTRL_PR_MASK|MRCC_CTRL_CM_MASK;
 
-    PORTD->PCR[15] = PORT_PCR_MUX(3);
-    PORTD->PCR[16] = PORT_PCR_MUX(3);
-	div = 12500000 / (BAUDRATE * 16);
+    PORTD->PCR[13] = PORT_PCR_MUX(3);
+    PORTD->PCR[14] = PORT_PCR_MUX(3);
 
-	/* High and low halves of the divider */
-	divh = div / 256;
-	divl = div - (divh * 256);
-
-    UART0->LCR |= UART_LCR_DLAB_EN;
-    UART0->DLL = (uint32_t) divl;
-	UART0->DLH = (uint32_t) divh;
-    UART0->LCR &= ~UART_LCR_DLAB_EN;
-
-    UART0->LCR = (UART_LCR_WLEN8 | UART_LCR_SBS_1BIT);
-    // enable TX
-    // UART0->TER1 = UART_TER1_TXEN;
+    UART1->LCR |= UART_LCR_DLAB_EN;
+    UART1->DLL = 1; //(uint32_t) divl;
+	UART1->DLH = 0; //(uint32_t) divh;
+    UART1->LCR &= ~UART_LCR_DLAB_EN;
+    // 8N1
+    UART1->LCR = (UART_LCR_WLEN8 | UART_LCR_SBS_1BIT);
+    // FIFO
+    UART1->FCR = (UART_FCR_TRG_LEV3|UART_FCR_FIFO_EN);
 }
 void env_put_char(char c)
 {
-    while(UART_LSR_THRE & UART0->LSR);
-	UART0->THR = (uint32_t) c;
+    // while((UART_IIR_INTID_MASK & UART1->IIR) != UART_IIR_INTID_THRE);
+    while((UART_LSR_THRE & UART1->LSR) == 0);
+	UART1->THR = (uint32_t) c;
 }
 
 char env_get_char()
 {
-    while(UART_LSR_RDR & UART0->LSR);
-    return UART0->RBR;
+    while(UART_LSR_RDR & UART1->LSR);
+    return UART1->RBR;
 }
 
 void env_sysinit(void)
 {
     env_uart_init();
-    env_put_char('a');
-    env_put_char('a');
-    env_put_char('a');
-    env_put_char('a');
-    // setvbuf(stdout, NULL, _IONBF, 0);
-    // setvbuf(stdin, NULL, _IONBF, 0);
+    setvbuf(stdout, NULL, _IONBF, 0);
+    setvbuf(stdin, NULL, _IONBF, 0);
 }
 
 /******************************************************************************
@@ -91,8 +79,8 @@ static void _default_isr(uint32_t lr, void *psp, void *msp)
     else
         frame = msp;
 
-    // printf("\r\n** HARD FAULT **\r\n\tpc=0x%p\r\n\tmsp=0x%p\r\n\tpsp=0x%p\r\n",
-    //        frame->pc, msp, psp);
-    // printf("\r\n****default_isr entered on vector %d*****\r\n", VECTORNUM);
+    printf("\r\n** HARD FAULT **\r\n\tpc=0x%p\r\n\tmsp=0x%p\r\n\tpsp=0x%p\r\n",
+        frame->pc, msp, psp);
+    printf("\r\n****default_isr entered on vector %d*****\r\n", VECTORNUM);
     asm("WFI");
 }

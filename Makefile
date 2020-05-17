@@ -21,7 +21,7 @@ GDB = $(TOOLCHAIN)-gdb
 
 MKDIR=mkdir -p
 
-COMM_FLAGS += -mcpu=$(CORE) -g3 -O0 -mthumb -Wall -fmessage-length=0 -nostdlib
+COMM_FLAGS += -mcpu=$(CORE) -g3 -O0 -mthumb -Wall -fmessage-length=0
 ASFLAGS += $(COMM_FLAGS)
 
 CFLAGS += $(COMM_FLAGS)
