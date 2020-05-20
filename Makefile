@@ -2,7 +2,7 @@ DEVICE_NAME ?= Qiyun
 MODULE ?= platinum
 CHIP_NAME ?= CPU_K32W133G256VAxA 
 CORE ?= cortex-m0
-LDFILE ?= flash
+LDFILE ?= ram
 
 DEFS += -D$(CHIP_NAME)
 DEFS += -D__NO_SYSTEM_INIT
