@@ -31,9 +31,15 @@ char env_get_char()
     while(UART_LSR_RDR & UART1->LSR);
     return UART1->RBR;
 }
-
+void disable_wdog(void)
+{
+  *(unsigned int*)(0x40052000+0x14) = 0xB0D9A1C4;   //unlock key1
+  *(unsigned int*)(0x40052000+0x14) = 0x1A1E3B0F;  //unlock key2
+  *(unsigned int*)(0x40052000+0x08) = 0x00000000;  //disable wdog
+}
 void env_sysinit(void)
 {
+    disable_wdog();
     env_uart_init();
     setvbuf(stdout, NULL, _IONBF, 0);
     setvbuf(stdin, NULL, _IONBF, 0);

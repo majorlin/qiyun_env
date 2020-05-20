@@ -12,6 +12,8 @@
 #endif
 
 #include "cpu_header.h"
+#include "capi.h"
+#define __ram_func __attribute__( ( long_call, section(".data#") ) )
 
 /*! @name Min/max macros */
 /* @{ */
