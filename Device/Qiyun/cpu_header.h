@@ -24,6 +24,11 @@ typedef enum IRQn {
   PendSV_IRQn                  = -2,               /**< Cortex-M0 Pend SV Interrupt */
   SysTick_IRQn                 = -1,               /**< Cortex-M0 System Tick Interrupt */
 
+  CAN0_IRQn                    = 16,               /**< Cortex-M0 System Tick Interrupt */
+  CAN1_IRQn                    = 16,               /**< Cortex-M0 System Tick Interrupt */
+  CAN0_MB_IRQn                 = 16,               /**< Cortex-M0 System Tick Interrupt */
+  CAN1_MB_IRQn                 = 16,               /**< Cortex-M0 System Tick Interrupt */
+
   /* Device specific interrupts */
 } IRQn_Type;
 
@@ -780,7 +785,10 @@ typedef struct {
   __IO uint32_t RXFGMASK;                          /**< Rx FIFO Global Mask register, offset: 0x48 */
   __I  uint32_t RXFIR;                             /**< Rx FIFO Information register, offset: 0x4C */
   __IO uint32_t CBT;                               /**< CAN Bit Timing register, offset: 0x50 */
-       uint8_t RESERVED_4[44];
+       uint8_t RESERVED_7[4];
+  __I  uint32_t DBG1;                              /**< Debug 1 register, offset: 0x58 */
+  __I  uint32_t DBG2;                              /**< Debug 2 register, offset: 0x5C */
+       uint8_t RESERVED_4[32];
   union {                                          /* offset: 0x80 */
     struct {                                         /* offset: 0x80, array step: 0x18 */
       __IO uint32_t CS;                                /**< Message Buffer 0 CS Register..Message Buffer 20 CS Register, array offset: 0x80, array step: 0x18 */
@@ -1498,6 +1506,48 @@ typedef struct {
 #define CAN_CBT_BTF(x)                           (((uint32_t)(((uint32_t)(x)) << CAN_CBT_BTF_SHIFT)) & CAN_CBT_BTF_MASK)
 /*! @} */
 
+/*! @name DBG1 - Debug 1 register */
+/*! @{ */
+#define CAN_DBG1_CFSM_MASK                       (0x3FU)
+#define CAN_DBG1_CFSM_SHIFT                      (0U)
+/*! CFSM - CAN Finite State Machine
+ */
+#define CAN_DBG1_CFSM(x)                         (((uint32_t)(((uint32_t)(x)) << CAN_DBG1_CFSM_SHIFT)) & CAN_DBG1_CFSM_MASK)
+#define CAN_DBG1_CBN_MASK                        (0x1F000000U)
+#define CAN_DBG1_CBN_SHIFT                       (24U)
+/*! CBN - CAN Bit Number
+ */
+#define CAN_DBG1_CBN(x)                          (((uint32_t)(((uint32_t)(x)) << CAN_DBG1_CBN_SHIFT)) & CAN_DBG1_CBN_MASK)
+/*! @} */
+
+/*! @name DBG2 - Debug 2 register */
+/*! @{ */
+#define CAN_DBG2_RMP_MASK                        (0x7FU)
+#define CAN_DBG2_RMP_SHIFT                       (0U)
+/*! RMP - Rx Matching Pointer
+ */
+#define CAN_DBG2_RMP(x)                          (((uint32_t)(((uint32_t)(x)) << CAN_DBG2_RMP_SHIFT)) & CAN_DBG2_RMP_MASK)
+#define CAN_DBG2_MPP_MASK                        (0x80U)
+#define CAN_DBG2_MPP_SHIFT                       (7U)
+/*! MPP - Matching Process in Progress
+ *  0b0..No matching process ongoing.
+ *  0b1..Matching process is in progress.
+ */
+#define CAN_DBG2_MPP(x)                          (((uint32_t)(((uint32_t)(x)) << CAN_DBG2_MPP_SHIFT)) & CAN_DBG2_MPP_MASK)
+#define CAN_DBG2_TAP_MASK                        (0x7F00U)
+#define CAN_DBG2_TAP_SHIFT                       (8U)
+/*! TAP - Tx Arbitration Pointer
+ */
+#define CAN_DBG2_TAP(x)                          (((uint32_t)(((uint32_t)(x)) << CAN_DBG2_TAP_SHIFT)) & CAN_DBG2_TAP_MASK)
+#define CAN_DBG2_APP_MASK                        (0x8000U)
+#define CAN_DBG2_APP_SHIFT                       (15U)
+/*! APP - Arbitration Process in Progress
+ *  0b0..No matching process ongoing.
+ *  0b1..Matching process is in progress.
+ */
+#define CAN_DBG2_APP(x)                          (((uint32_t)(((uint32_t)(x)) << CAN_DBG2_APP_SHIFT)) & CAN_DBG2_APP_MASK)
+/*! @} */
+
 /* The count of CAN_CS */
 #define CAN_CS_COUNT_MB16B                       (21U)
 
@@ -1929,12 +1979,12 @@ typedef struct {
 /** Array initializer of CAN peripheral base pointers */
 #define CAN_BASE_PTRS                            { CAN0, CAN1 }
 /** Interrupt vectors for the CAN peripheral type */
-// #define CAN_Rx_Warning_IRQS                      { CAN0_IRQn }
-// #define CAN_Tx_Warning_IRQS                      { CAN0_IRQn }
-// #define CAN_Wake_Up_IRQS                         { CAN0_IRQn }
-// #define CAN_Error_IRQS                           { CAN0_IRQn }
-// #define CAN_Bus_Off_IRQS                         { CAN0_IRQn }
-// #define CAN_ORed_Message_buffer_IRQS             { CAN0_MB_IRQn }
+#define CAN_Rx_Warning_IRQS                      { CAN0_IRQn, CAN1_IRQn }
+#define CAN_Tx_Warning_IRQS                      { CAN0_IRQn, CAN1_IRQn }
+#define CAN_Wake_Up_IRQS                         { CAN0_IRQn, CAN1_IRQn }
+#define CAN_Error_IRQS                           { CAN0_IRQn, CAN1_IRQn }
+#define CAN_Bus_Off_IRQS                         { CAN0_IRQn, CAN1_IRQn }
+#define CAN_ORed_Message_buffer_IRQS             { CAN0_MB_IRQn, CAN1_MB_IRQn }
 
 /*!
  * @}
