@@ -158,7 +158,7 @@ int EraseSector(U32 SectorAddr)
     if (FMC->FSTAT & 0x01)
     {
         // Erase FAIL
-        return -1;
+        return 1;
     }
     _FeedWatchdog();
     return 0;
@@ -216,7 +216,7 @@ int ProgramPage(U32 DestAddr, U32 NumBytes, U8 *pSrcBuff)
             if (FMC->FSTAT & 0x01)
             {
                 // Program FAIL
-                return -1;
+                return 1;
             }
             pSrc += 4;
         } while (--NumPages);
