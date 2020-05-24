@@ -18,16 +18,41 @@ typedef enum IRQn {
   NotAvail_IRQn                = -128,             /**< Not available device specific interrupt */
 
   /* Core interrupts */
-  NonMaskableInt_IRQn          = -14,              /**< Non Maskable Interrupt */
-  HardFault_IRQn               = -13,              /**< Cortex-M0 SV Hard Fault Interrupt */
-  SVCall_IRQn                  = -5,               /**< Cortex-M0 SV Call Interrupt */
-  PendSV_IRQn                  = -2,               /**< Cortex-M0 Pend SV Interrupt */
-  SysTick_IRQn                 = -1,               /**< Cortex-M0 System Tick Interrupt */
-
-  CAN0_IRQn                    = 16,               /**< Cortex-M0 System Tick Interrupt */
-  CAN1_IRQn                    = 16,               /**< Cortex-M0 System Tick Interrupt */
-  CAN0_MB_IRQn                 = 16,               /**< Cortex-M0 System Tick Interrupt */
-  CAN1_MB_IRQn                 = 16,               /**< Cortex-M0 System Tick Interrupt */
+  NonMaskableInt_IRQn          = -14,               /**< Non Maskable Interrupt */
+  HardFault_IRQn               = -13,               /**< Cortex-M0 SV Hard Fault Interrupt */
+  SVCall_IRQn                  = -5,                /**< Cortex-M0 SV Call Interrupt */
+  PendSV_IRQn                  = -2,                /**< Cortex-M0 Pend SV Interrupt */
+  SysTick_IRQn                 = -1,                /**< Cortex-M0 System Tick Interrupt */
+  DMA_CH0_IRQn                 = 0,                 /**< Device 0/16  interrupt > */
+  DMA_CH1_IRQn                 = 1,                 /**< Device 1/17  interrupt > */
+  DMA_ERR_IRQn                 = 2,                 /**< Device 2/18  interrupt > */
+  FLASH_IRQn                   = 3,                 /**< Device 3/19  interrupt > */
+  PMU_IRQn                     = 4,                 /**< Device 4/20  interrupt > */
+  I2C0_IRQn                    = 5,                 /**< Device 5/21  interrupt > */
+  I2C1_IRQn                    = 6,                 /**< Device 6/22  interrupt > */
+  SPI0_IRQn                    = 7,                 /**< Device 7/23  interrupt > */
+  SPI1_IRQn                    = 8,                 /**< Device 8/24  interrupt > */
+  SPI2_IRQn                    = 9,                 /**< Device 9/25  interrupt > */
+  UART0_IRQn                   = 10,                /**< Device 10/26 interrupt > */
+  UART1_IRQn                   = 11,                /**< Device 11/27 interrupt > */
+  UART2_IRQn                   = 12,                /**< Device 12/28 interrupt > */
+  UART3_IRQn                   = 13,                /**< Device 13/29 interrupt > */
+  ADC0_IRQn                    = 14,                /**< Device 14/30 interrupt > */
+  ADC1_IRQn                    = 15,                /**< Device 15/31 interrupt > */
+  CMP0_IRQn                    = 16,                /**< Device 16/32 interrupt > */
+  TIM0_IRQn                    = 17,                /**< Device 17/33 interrupt > */
+  TIM1_IRQn                    = 18,                /**< Device 18/34 interrupt > */
+  TIM2_IRQn                    = 19,                /**< Device 19/35 interrupt > */
+  CAN0_IRQn                    = 20,                /**< Device 20/36 interrupt > */
+  CAN1_IRQn                    = 21,                /**< Device 21/37 interrupt > */
+  RTC_IRQn                     = 22,                /**< Device 22/38 interrupt > */
+  RESERVED0_IRQn               = 23,                /**< Device 23/39 interrupt > */
+  RESERVED1_IRQn               = 24,                /**< Device 24/40 interrupt > */
+  SCC_IRQn                     = 25,                /**< Device 25/41 interrupt > */
+  WDOG_IRQn                    = 26,                /**< Device 26/42 interrupt > */
+  EWDT_IRQn                    = 27,                /**< Device 27/43 interrupt > */
+  LPTIM0_IRQn                  = 28,                /**< Device 28/44 interrupt > */
+  SRMC_IRQn                    = 29,                /**< Device 29/45 interrupt > */
 
   /* Device specific interrupts */
 } IRQn_Type;
@@ -1984,7 +2009,7 @@ typedef struct {
 #define CAN_Wake_Up_IRQS                         { CAN0_IRQn, CAN1_IRQn }
 #define CAN_Error_IRQS                           { CAN0_IRQn, CAN1_IRQn }
 #define CAN_Bus_Off_IRQS                         { CAN0_IRQn, CAN1_IRQn }
-#define CAN_ORed_Message_buffer_IRQS             { CAN0_MB_IRQn, CAN1_MB_IRQn }
+#define CAN_ORed_Message_buffer_IRQS             { CAN0_IRQn, CAN1_IRQn }
 
 /*!
  * @}
