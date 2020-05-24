@@ -9,6 +9,7 @@ Purpose : Implementation of RAMCode template
 --------  END-OF-HEADER  ---------------------------------------------
 */
 #include "FlashOS.h"
+#include "common.h"
 
 /*********************************************************************
 *
@@ -16,8 +17,8 @@ Purpose : Implementation of RAMCode template
 *
 **********************************************************************
 */
-#define PAGE_SIZE_SHIFT          (3)      // The smallest program unit (one page) is 8 byte in size
-#define SECTOR_SIZE_SHIFT        (12)     // 4096 sector size
+#define PAGE_SIZE_SHIFT (4)    // The smallest program unit (one page) is 16 byte in size
+#define SECTOR_SIZE_SHIFT (13) // 8192 sector size
 //
 // Some flash types require a native verify function as the memory is not memory mapped available (e.g. eMMC flashes).
 // If the verify function is implemented in the algorithm, it will be used by the J-Link DLL during compare / verify
@@ -25,12 +26,12 @@ Purpose : Implementation of RAMCode template
 // Please note, that SEGGER does not recommend to use this function if the flash can be memory mapped read
 // as this may can slow-down the compare / verify step.
 //
-#define SUPPORT_NATIVE_VERIFY        (0)
+#define SUPPORT_NATIVE_VERIFY (0)
 #define SUPPORT_NATIVE_READ_FUNCTION (0)
-#define SUPPORT_BLANK_CHECK          (0)
-#define SUPPORT_ERASE_CHIP           (0)
-#define SUPPORT_SEGGER_OPEN_Program  (1)
-#define SUPPORT_SEGGER_OPEN_ERASE    (1)
+#define SUPPORT_BLANK_CHECK (0)
+#define SUPPORT_ERASE_CHIP (0)
+#define SUPPORT_SEGGER_OPEN_Program (1)
+#define SUPPORT_SEGGER_OPEN_ERASE (1)
 
 /*********************************************************************
 *
@@ -48,7 +49,7 @@ Purpose : Implementation of RAMCode template
 //
 // We use this dummy variable to make sure that the PrgData
 // section is present in the output elf-file as this section
-// is mandatory in current versions of the J-Link DLL 
+// is mandatory in current versions of the J-Link DLL
 //
 static volatile int _Dummy;
 
@@ -67,7 +68,8 @@ static volatile int _Dummy;
 *    Feeds the watchdog. Needs to be called during RAMCode execution
 *    in case of an watchdog is active.
 */
-static void _FeedWatchdog(void) {
+static void _FeedWatchdog(void)
+{
 }
 
 /*********************************************************************
@@ -93,15 +95,16 @@ static void _FeedWatchdog(void) {
 *    0 O.K.
 *    1 Error
 */
-int Init(U32 Addr, U32 Freq, U32 Func) {
-  (void)Addr;
-  (void)Freq;
-  (void)Func;
-  //
-  // Init code
-  //
-  *(volatile U32*)(0x000004) = Func; // Dummy code, needs to be replaced with Init code.
-  return 0;
+int Init(U32 Addr, U32 Freq, U32 Func)
+{
+    (void)Addr;
+    (void)Freq;
+    (void)Func;
+    //
+    // Init code
+    //
+    *(volatile U32 *)(0x000004) = Func; // Dummy code, needs to be replaced with Init code.
+    return 0;
 }
 
 /*********************************************************************
@@ -118,13 +121,14 @@ int Init(U32 Addr, U32 Freq, U32 Func) {
 *    0 O.K.
 *    1 Error
 */
-int UnInit(U32 Func) {
-  (void)Func;
-  //
-  // Uninit code
-  //
-  *(volatile U32*)(0x000008) = Func; // Dummy code, needs to be replaced with UnInit code.
-  return 0;
+int UnInit(U32 Func)
+{
+    (void)Func;
+    //
+    // Uninit code
+    //
+    *(volatile U32 *)(0x000008) = Func; // Dummy code, needs to be replaced with UnInit code.
+    return 0;
 }
 
 /*********************************************************************
@@ -141,13 +145,23 @@ int UnInit(U32 Func) {
 *    0 O.K.
 *    1 Error
 */
-int EraseSector(U32 SectorAddr) {
-  //
-  // Erase sector code
-  //
-  *(volatile U32*)(0x00000C) = SectorAddr;  // Dummy code, needs to be replaced with erase sector code
-  _FeedWatchdog();
-  return 0;
+int EraseSector(U32 SectorAddr)
+{
+    //
+    // Erase sector code
+    //
+    FMC->FADDR = SectorAddr;
+    FMC->FCMD = 0x42;
+    FMC->FSTAT = 0x80;
+    while (!(FMC->FSTAT & 0x80))
+        ;
+    if (FMC->FSTAT & 0x01)
+    {
+        // Erase FAIL
+        return -1;
+    }
+    _FeedWatchdog();
+    return 0;
 }
 
 /*********************************************************************
@@ -166,42 +180,48 @@ int EraseSector(U32 SectorAddr) {
 *    0 O.K.
 *    1 Error
 */
-int ProgramPage(U32 DestAddr, U32 NumBytes, U8 *pSrcBuff) {
-  volatile U8 * pSrc;
-  volatile U8 * pDest;
-  U8 AccessWidth;
-  U32 Status;
-  U32 NumPages;
-  U32 NumBytesAtOnce;
-  int r;
+int ProgramPage(U32 DestAddr, U32 NumBytes, U8 *pSrcBuff)
+{
+    U32 NumPages;
+    U32 *pSrc;
+    int r;
 
-  r           = -1;
-  pSrc        = (volatile U8*)pSrcBuff;
-  pDest       = (volatile U8*)DestAddr;
-  //
-  // RAMCode is able to program multiple pages
-  //
-  NumPages    = NumBytes >> PAGE_SIZE_SHIFT;
-  //
-  // Program page-wise
-  //
-  if (NumPages) {
-    r = 0;
-    do {
-      NumBytesAtOnce = (1 << PAGE_SIZE_SHIFT);
-      _FeedWatchdog();
-      //
-      // Program one page
-      //
-      do {
-        // 
-        // Program page code
-        //
-        *pDest++ = *pSrc++;
-      } while(--NumBytesAtOnce);
-    } while (--NumPages);
-  }
-  return r;
+    r = -1;
+    //
+    // RAMCode is able to program multiple pages
+    //
+    NumPages = NumBytes >> PAGE_SIZE_SHIFT;
+    //
+    // Program page-wise
+    //
+    pSrc = (U32 *)pSrcBuff;
+    if (NumPages)
+    {
+        r = 0;
+        do
+        {
+            _FeedWatchdog();
+            //
+            // Program one page
+            //
+            FMC->FADDR = DestAddr;
+            FMC->FDATA[0] = pSrc[0];
+            FMC->FDATA[1] = pSrc[1];
+            FMC->FDATA[2] = pSrc[2];
+            FMC->FDATA[3] = pSrc[3];
+            FMC->FCMD = 0x24;
+            FMC->FSTAT = 0x80;
+            while (!(FMC->FSTAT & 0x80))
+                ;
+            if (FMC->FSTAT & 0x01)
+            {
+                // Program FAIL
+                return -1;
+            }
+            pSrc += 4;
+        } while (--NumPages);
+    }
+    return r;
 }
 
 /*********************************************************************
@@ -223,21 +243,24 @@ int ProgramPage(U32 DestAddr, U32 NumBytes, U8 *pSrcBuff) {
 *
 */
 #if SUPPORT_NATIVE_VERIFY
-U32 Verify(U32 Addr, U32 NumBytes, U8 *pBuff) {
-  unsigned char *pFlash;
-  unsigned long r;
+U32 Verify(U32 Addr, U32 NumBytes, U8 *pBuff)
+{
+    unsigned char *pFlash;
+    unsigned long r;
 
-  pFlash = (unsigned char *)Addr;
-  r = Addr + NumBytes;
-  do {
-      if (*pFlash != *pBuff) {
-        r = (unsigned long)pFlash;
-        break;
-      }
-      pFlash++;
-      pBuff++;
-  } while (--NumBytes);
-  return r;
+    pFlash = (unsigned char *)Addr;
+    r = Addr + NumBytes;
+    do
+    {
+        if (*pFlash != *pBuff)
+        {
+            r = (unsigned long)pFlash;
+            break;
+        }
+        pFlash++;
+        pBuff++;
+    } while (--NumBytes);
+    return r;
 }
 #endif
 
@@ -260,16 +283,19 @@ U32 Verify(U32 Addr, U32 NumBytes, U8 *pBuff) {
 *
 */
 #if SUPPORT_BLANK_CHECK
-int BlankCheck(U32 Addr, U32 NumBytes, U8 BlankData) {
-  U8* pData;
-  
-  pData = (U8*)Addr;
-  do {
-    if (*pData++ != BlankData) {
-      return 1;
-    }
-  } while (--NumBytes);
-  return 0;
+int BlankCheck(U32 Addr, U32 NumBytes, U8 BlankData)
+{
+    U8 *pData;
+
+    pData = (U8 *)Addr;
+    do
+    {
+        if (*pData++ != BlankData)
+        {
+            return 1;
+        }
+    } while (--NumBytes);
+    return 0;
 }
 #endif
 
@@ -285,13 +311,14 @@ int BlankCheck(U32 Addr, U32 NumBytes, U8 BlankData) {
 *    1: Error
 */
 #if SUPPORT_ERASE_CHIP
-int EraseChip(void) {
-  //
-  // Erase chip code
-  //
-  *(volatile U32*)(0x000000) = SectorAddr;  // Dummy code, needs to be replaced with erase chip code
-  _FeedWatchdog();
-  return 0;
+int EraseChip(void)
+{
+    //
+    // Erase chip code
+    //
+    *(volatile U32 *)(0x000000) = SectorAddr; // Dummy code, needs to be replaced with erase chip code
+    _FeedWatchdog();
+    return 0;
 }
 #endif
 
@@ -313,12 +340,13 @@ int EraseChip(void) {
 *
 */
 #if SUPPORT_NATIVE_READ_FUNCTION
-int SEGGER_OPEN_Read(U32 Addr, U32 NumBytes, U8 *pDestBuff) {
-  //
-  // Read function
-  // Add your code here...
-  //
-  return NumBytes;
+int SEGGER_OPEN_Read(U32 Addr, U32 NumBytes, U8 *pDestBuff)
+{
+    //
+    // Read function
+    // Add your code here...
+    //
+    return NumBytes;
 }
 #endif
 
@@ -345,21 +373,24 @@ int SEGGER_OPEN_Read(U32 Addr, U32 NumBytes, U8 *pDestBuff) {
 *
 */
 #if SUPPORT_SEGGER_OPEN_Program
-int SEGGER_OPEN_Program(U32 DestAddr, U32 NumBytes, U8 *pSrcBuff) {
-  U32 NumPages;
-  int r;
+int SEGGER_OPEN_Program(U32 DestAddr, U32 NumBytes, U8 *pSrcBuff)
+{
+    U32 NumPages;
+    int r;
 
-  NumPages = (NumBytes >> PAGE_SIZE_SHIFT);
-  r = 0;
-  do {
-    r = ProgramPage(DestAddr, (1uL << PAGE_SIZE_SHIFT), pSrcBuff);
-    if (r < 0) {
-      return r;
-    }
-    DestAddr += (1uL << PAGE_SIZE_SHIFT);
-    pSrcBuff += (1uL << PAGE_SIZE_SHIFT);
-  } while (--NumPages);
-  return r;
+    NumPages = (NumBytes >> PAGE_SIZE_SHIFT);
+    r = 0;
+    do
+    {
+        r = ProgramPage(DestAddr, (1uL << PAGE_SIZE_SHIFT), pSrcBuff);
+        if (r < 0)
+        {
+            return r;
+        }
+        DestAddr += (1uL << PAGE_SIZE_SHIFT);
+        pSrcBuff += (1uL << PAGE_SIZE_SHIFT);
+    } while (--NumPages);
+    return r;
 }
 #endif
 
@@ -388,18 +419,19 @@ int SEGGER_OPEN_Program(U32 DestAddr, U32 NumBytes, U8 *pSrcBuff) {
 *
 */
 #if SUPPORT_SEGGER_OPEN_ERASE
-int SEGGER_OPEN_Erase(U32 SectorAddr, U32 SectorIndex, U32 NumSectors) {
-  (void)SectorAddr;
-  U32 Status;
-  int r;
-  
-  _FeedWatchdog();
-  r = 0;
-  do {
-    EraseSector(SectorAddr);
-    SectorAddr += (1 << SECTOR_SIZE_SHIFT);
-  } while (--NumSectors);
-  return r;
+int SEGGER_OPEN_Erase(U32 SectorAddr, U32 SectorIndex, U32 NumSectors)
+{
+    (void)SectorAddr;
+    int r;
+
+    _FeedWatchdog();
+    r = 0;
+    do
+    {
+        EraseSector(SectorAddr);
+        SectorAddr += (1 << SECTOR_SIZE_SHIFT);
+    } while (--NumSectors);
+    return r;
 }
 #endif
 
