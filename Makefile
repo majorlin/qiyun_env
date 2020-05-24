@@ -1,14 +1,11 @@
-DEVICE_NAME ?= Qiyun
 MODULE ?= platinum
-CHIP_NAME ?= CPU_K32W133G256VAxA 
 CORE ?= cortex-m0
 LDFILE ?= flash
 
-DEFS += -D$(CHIP_NAME)
 DEFS += -D__NO_SYSTEM_INIT
 DEFS += -D__STARTUP_CLEAR_BSS -D__ATOLLIC__
 DEFS += -DLDFILE=\"$(LDFILE)\"
-DEVICE_PATH = ./Device/$(DEVICE_NAME)
+DEVICE_PATH = ./device
 
 TOOLCHAIN = arm-none-eabi
 AS = $(TOOLCHAIN)-as
@@ -21,7 +18,7 @@ GDB = $(TOOLCHAIN)-gdb
 
 MKDIR=mkdir -p
 
-COMM_FLAGS += -mcpu=$(CORE) -g3 -O0 -mthumb -Wall -fmessage-length=0
+COMM_FLAGS += -mcpu=$(CORE) -g3 -O0 -mthumb -Wall -fmessage-length=0 -nostdlib
 ASFLAGS += $(COMM_FLAGS)
 
 CFLAGS += $(COMM_FLAGS)
@@ -37,21 +34,17 @@ LFLAGS += -static -nostartfiles
 LFLAGS += -T$(LINK_FILE_PATH)
 
 DEVICE_SRC += 	$(wildcard $(DEVICE_PATH)/*.c) \
-				$(wildcard ./common/*.c) \
-				$(wildcard ./drivers/*.c) \
-				$(wildcard ./Device/drivers/*.c)
+				$(wildcard ./common/*.c) 
 
 SRC += $(DEVICE_SRC)
-SRC += $(wildcard Modules/$(MODULE)/*.c)
+SRC += $(wildcard src/*.c)
 
 
 ASRC = $(wildcard $(DEVICE_PATH)/gcc/*.S)
 
 INCLUDE += -IModules/$(MODULE)
 INCLUDE += -IModules/$(MODULE)/hal
-INCLUDE += -IUnity
 INCLUDE += -Icommon
-INCLUDE += -Idrivers
 INCLUDE += -Icommon/cmsis
 INCLUDE += -I$(DEVICE_PATH)
 BUILD_PATH ?= build/$(TARGET)
