@@ -1,0 +1,9 @@
+<Database>
+  <!--                                    -->
+  <!-- Zhixin Devices (Cortex-M0 devices)-->
+  <!--                                    -->
+  <Device>
+    <ChipInfo Vendor="Zhixin" Name="Qiyun" Core="JLINK_CORE_CORTEX_M0" WorkRAMAddr="0x20000000" WorkRAMSize="0x4000" />
+    <FlashBankInfo Name="Internal Flash" BaseAddr="0x00000000" MaxSize="0x20000" Loader="/home/major/work/kinetis/qiyun_env/output/flash.elf" LoaderType="FLASH_ALGO_TYPE_OPEN" AlwaysPresent="1"/>
+  </Device> 
+</Database>
