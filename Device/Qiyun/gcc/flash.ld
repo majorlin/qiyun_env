@@ -7,8 +7,8 @@ STACK_SIZE = DEFINED(__stack_size__) ? __stack_size__ : 0x0800;
 /* Specify the memory areas */
 MEMORY
 {
-  m_interrupts          (RX)  : ORIGIN = 0x00000000, LENGTH = 0x40
-  m_text                (RX)  : ORIGIN = 0x00000040, LENGTH = 30K- 0x40
+  m_interrupts          (RX)  : ORIGIN = 0x00000000, LENGTH = 0x400
+  m_text                (RX)  : ORIGIN = 0x00000400, LENGTH = 30K- 0x400
   m_data                (RW)  : ORIGIN = 0x20000000, LENGTH = 14K
 }
 

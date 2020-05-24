@@ -23,6 +23,7 @@ typedef enum IRQn {
   SVCall_IRQn                  = -5,                /**< Cortex-M0 SV Call Interrupt */
   PendSV_IRQn                  = -2,                /**< Cortex-M0 Pend SV Interrupt */
   SysTick_IRQn                 = -1,                /**< Cortex-M0 System Tick Interrupt */
+
   DMA_CH0_IRQn                 = 0,                 /**< Device 0/16  interrupt > */
   DMA_CH1_IRQn                 = 1,                 /**< Device 1/17  interrupt > */
   DMA_ERR_IRQn                 = 2,                 /**< Device 2/18  interrupt > */
