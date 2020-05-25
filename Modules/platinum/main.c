@@ -2,11 +2,10 @@
 #include "testcase.h"
 #include <stdio.h>
 extern void env_sysinit(void);
+extern void flexcan_test(void);
 int main(){
     env_sysinit();
-    printf("Hello, world!\r\n");
-    flexcan_print_regs(CAN0);
-    flexcan_print_regs(CAN1);
+    flexcan_test();
     while(1){
     }
     return 0;
